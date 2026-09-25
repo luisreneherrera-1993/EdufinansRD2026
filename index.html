@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Educación Financiera RD | Diagnóstico IA & Estrategia Nacional · UFHEC 2026</title>
+  <meta name="description" content="Plataforma de Diagnóstico, Modelado de IA y Estrategia de Educación Financiera en República Dominicana. Basada en datos del BCRD, MINERD, BID y OCDE. Proyecto Final Python UFHEC 2026." />
+  <meta name="keywords" content="educación financiera, república dominicana, inteligencia artificial, machine learning, BCRD, UFHEC, Python, Streamlit" />
+  <meta name="author" content="Luis Rene Herrera — UFHEC 2026" />
+
+  <!-- Open Graph / Social -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Educación Financiera RD | IA & Estrategia Nacional" />
+  <meta property="og:description" content="Plataforma interactiva con Random Forest, K-Means y Simulador de Costo-Efectividad para curricularizar la educación financiera en RD." />
+  <meta property="og:image" content="assets/images/hero_banner.jpg" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─── DESIGN TOKENS ─────────────────────────────────────────── */
+    :root {
+      --bg-primary: #060d1b;
+      --bg-secondary: #0f172a;
+      --bg-card: rgba(15, 23, 42, 0.75);
+      --border: rgba(56, 189, 248, 0.18);
+      --teal: #38bdf8;
+      --teal-dark: #0ea5e9;
+      --teal-glow: rgba(56, 189, 248, 0.25);
+      --gold: #f59e0b;
+      --green: #10b981;
+      --red: #ef4444;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #475569;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --shadow: 0 25px 60px rgba(0,0,0,0.5);
+    }
+
+    /* ─── RESET & BASE ──────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+    img { max-width: 100%; display: block; }
+    a { color: var(--teal); text-decoration: none; }
+    a:hover { color: #7dd3fc; }
+
+    /* ─── SCROLLBAR ─────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+    ::-webkit-scrollbar-thumb { background: var(--teal-dark); border-radius: 3px; }
+
+    /* ─── ANIMATED BACKGROUND ───────────────────────────────────── */
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(56,189,248,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56,189,248,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+    .bg-blob {
+      position: fixed; border-radius: 50%; filter: blur(120px);
+      pointer-events: none; z-index: 0;
+      animation: blobFloat 12s ease-in-out infinite alternate;
+    }
+    .blob1 { width: 500px; height: 500px; background: rgba(56,189,248,0.06); top: -150px; left: -150px; }
+    .blob2 { width: 400px; height: 400px; background: rgba(16,185,129,0.05); bottom: 10%; right: -100px; animation-delay: -4s; }
+    .blob3 { width: 350px; height: 350px; background: rgba(245,158,11,0.04); top: 40%; left: 30%; animation-delay: -8s; }
+    @keyframes blobFloat { 0%{transform:translate(0,0) scale(1);} 100%{transform:translate(30px,40px) scale(1.08);} }
+
+    /* ─── CONTENT WRAPPER ───────────────────────────────────────── */
+    .content { position: relative; z-index: 1; }
+
+    /* ─── NAVBAR ────────────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 16px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(6, 13, 27, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      transition: all 0.3s ease;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 12px;
+      font-weight: 700; font-size: 1rem;
+      color: var(--text-primary);
+    }
+    .nav-logo .flag { font-size: 1.6rem; }
+    .nav-links { display: flex; gap: 32px; list-style: none; }
+    .nav-links a {
+      color: var(--text-secondary); font-size: 0.9rem; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--teal); }
+    .nav-cta {
+      background: linear-gradient(135deg, var(--teal-dark), #0284c7);
+      color: #fff !important; padding: 9px 22px;
+      border-radius: 8px; font-weight: 600 !important;
+      transition: transform 0.2s, box-shadow 0.2s !important;
+      box-shadow: 0 0 20px rgba(56,189,248,0.3);
+    }
+    .nav-cta:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(56,189,248,0.5) !important; color: #fff !important; }
+
+    /* ─── HERO SECTION ──────────────────────────────────────────── */
+    #hero {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 120px 40px 80px;
+      position: relative; overflow: hidden;
+    }
+    .hero-inner {
+      max-width: 1200px; width: 100%;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.3);
+      color: var(--teal); font-size: 0.8rem; font-weight: 600;
+      padding: 6px 14px; border-radius: 20px; margin-bottom: 24px;
+      letter-spacing: 0.5px;
+      animation: fadeInDown 0.8s ease both;
+    }
+    .hero-title {
+      font-size: clamp(2.2rem, 4vw, 3.5rem);
+      font-weight: 900; line-height: 1.15;
+      background: linear-gradient(135deg, #f1f5f9 30%, var(--teal) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: fadeInUp 0.9s ease 0.1s both;
+      margin-bottom: 20px;
+    }
+    .hero-sub {
+      font-size: 1.1rem; color: var(--text-secondary); line-height: 1.8;
+      animation: fadeInUp 0.9s ease 0.2s both;
+      margin-bottom: 32px;
+    }
+    .hero-btns {
+      display: flex; gap: 16px; flex-wrap: wrap;
+      animation: fadeInUp 0.9s ease 0.3s both;
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 28px; border-radius: 10px;
+      font-weight: 600; font-size: 0.95rem;
+      transition: all 0.25s ease; cursor: pointer;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--teal-dark) 0%, #0284c7 100%);
+      color: #fff;
+      box-shadow: 0 8px 30px rgba(56,189,248,0.4);
+    }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(56,189,248,0.55); color: #fff; }
+    .btn-secondary {
+      background: transparent;
+      border: 1.5px solid var(--border);
+      color: var(--text-primary);
+    }
+    .btn-secondary:hover { border-color: var(--teal); color: var(--teal); background: rgba(56,189,248,0.06); transform: translateY(-2px); }
+
+    .hero-img-wrap {
+      position: relative; animation: fadeInRight 1s ease 0.2s both;
+    }
+    .hero-img-wrap img {
+      border-radius: var(--radius);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 60px rgba(56,189,248,0.15);
+      border: 1px solid var(--border);
+    }
+    .hero-img-glow {
+      position: absolute; inset: -20px; border-radius: 24px;
+      background: radial-gradient(ellipse at center, rgba(56,189,248,0.12), transparent 70%);
+      pointer-events: none;
+    }
+
+    /* ─── STATS RIBBON ───────────────────────────────────────────── */
+    #stats {
+      padding: 60px 40px;
+      background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(6,13,27,0.95));
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .stats-grid {
+      max-width: 1200px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px;
+    }
+    .stat-card {
+      text-align: center; padding: 30px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+    }
+    .stat-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--teal);
+      box-shadow: 0 12px 40px var(--teal-glow);
+    }
+    .stat-value {
+      font-size: 2.6rem; font-weight: 900;
+      background: linear-gradient(135deg, var(--teal), #7dd3fc);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+    }
+    .stat-label {
+      font-size: 0.82rem; color: var(--text-secondary);
+      text-transform: uppercase; letter-spacing: 0.8px;
+      margin-top: 8px;
+    }
+    .stat-icon { font-size: 2rem; margin-bottom: 12px; }
+
+    /* ─── SECTION SHARED ─────────────────────────────────────────── */
+    section { padding: 100px 40px; }
+    .section-inner { max-width: 1200px; margin: 0 auto; }
+    .section-tag {
+      display: inline-block;
+      font-size: 0.78rem; font-weight: 700;
+      color: var(--teal); letter-spacing: 1.5px; text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      font-weight: 800; line-height: 1.25;
+      margin-bottom: 18px;
+    }
+    .section-desc {
+      font-size: 1.05rem; color: var(--text-secondary);
+      max-width: 650px; line-height: 1.85;
+      margin-bottom: 56px;
+    }
+
+    /* ─── MODULES / FEATURES ─────────────────────────────────────── */
+    #modules { background: var(--bg-secondary); }
+    .modules-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+    }
+    .module-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+      backdrop-filter: blur(12px);
+      transition: all 0.35s ease;
+      position: relative; overflow: hidden;
+    }
+    .module-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--teal-dark), var(--green));
+      transform: scaleX(0); transform-origin: left;
+      transition: transform 0.35s ease;
+    }
+    .module-card:hover::before { transform: scaleX(1); }
+    .module-card:hover {
+      border-color: rgba(56,189,248,0.4);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 40px var(--teal-glow);
+      transform: translateY(-5px);
+    }
+    .module-icon {
+      font-size: 2.4rem; margin-bottom: 16px;
+      display: block;
+    }
+    .module-card h3 {
+      font-size: 1.1rem; font-weight: 700;
+      margin-bottom: 12px; color: var(--text-primary);
+    }
+    .module-card p {
+      font-size: 0.92rem; color: var(--text-secondary); line-height: 1.7;
+    }
+    .module-pill {
+      display: inline-block; margin-top: 16px;
+      font-size: 0.75rem; font-weight: 600;
+      color: var(--teal); background: rgba(56,189,248,0.1);
+      border: 1px solid rgba(56,189,248,0.25);
+      padding: 4px 12px; border-radius: 20px;
+    }
+
+    /* ─── FEATURE SHOWCASE (alternating) ─────────────────────────── */
+    #showcase { background: var(--bg-primary); }
+    .showcase-item {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 70px; align-items: center;
+      margin-bottom: 100px;
+    }
+    .showcase-item:last-child { margin-bottom: 0; }
+    .showcase-item.reverse .showcase-text { order: 2; }
+    .showcase-item.reverse .showcase-visual { order: 1; }
+    .showcase-text h3 {
+      font-size: 1.8rem; font-weight: 800;
+      margin-bottom: 16px; line-height: 1.3;
+    }
+    .showcase-text p {
+      color: var(--text-secondary); line-height: 1.85; margin-bottom: 20px;
+    }
+    .showcase-text ul {
+      list-style: none; display: flex; flex-direction: column; gap: 10px;
+    }
+    .showcase-text ul li {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 0.93rem; color: var(--text-secondary);
+    }
+    .showcase-text ul li::before {
+      content: '→';
+      color: var(--teal); flex-shrink: 0; margin-top: 2px;
+    }
+    .showcase-visual img {
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+    .showcase-visual img:hover {
+      transform: scale(1.02);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 50px var(--teal-glow);
+    }
+
+    /* ─── TECH STACK ─────────────────────────────────────────────── */
+    #tech { background: var(--bg-secondary); }
+    .tech-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+      margin-bottom: 50px;
+    }
+    .tech-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 24px 20px; text-align: center;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+    .tech-card:hover {
+      border-color: var(--teal);
+      box-shadow: 0 10px 30px var(--teal-glow);
+      transform: translateY(-4px);
+    }
+    .tech-card .tech-logo { font-size: 2.5rem; margin-bottom: 10px; }
+    .tech-card h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; }
+    .tech-card span { font-size: 0.78rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+
+    /* ─── DATA SOURCES ───────────────────────────────────────────── */
+    #sources { background: var(--bg-primary); }
+    .sources-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+    }
+    .source-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 24px;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .source-card:hover {
+      border-color: rgba(56,189,248,0.4);
+      transform: translateY(-3px);
+    }
+    .source-card .src-icon { font-size: 1.8rem; margin-bottom: 10px; }
+    .source-card h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 8px; color: var(--teal); }
+    .source-card p { font-size: 0.85rem; color: var(--text-secondary); }
+
+    /* ─── ARCHITECTURE ───────────────────────────────────────────── */
+    #architecture { background: var(--bg-secondary); }
+    .arch-flow {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0; flex-wrap: wrap;
+      max-width: 900px; margin: 0 auto;
+    }
+    .arch-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 20px 24px; text-align: center;
+      min-width: 140px; transition: all 0.3s;
+    }
+    .arch-box:hover { border-color: var(--teal); box-shadow: 0 8px 30px var(--teal-glow); }
+    .arch-box .arch-icon { font-size: 1.8rem; margin-bottom: 8px; }
+    .arch-box h5 { font-size: 0.85rem; font-weight: 700; margin-bottom: 4px; }
+    .arch-box span { font-size: 0.72rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+    .arch-arrow {
+      font-size: 1.6rem; color: var(--teal); padding: 0 8px;
+      opacity: 0.7;
+    }
+
+    /* ─── INSTALL SECTION ────────────────────────────────────────── */
+    #install { background: var(--bg-primary); }
+    .install-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
+    }
+    .code-block {
+      background: #0d1117;
+      border: 1px solid rgba(56,189,248,0.2);
+      border-radius: var(--radius-sm);
+      padding: 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88rem;
+      color: #a5f3fc;
+      line-height: 1.8;
+      position: relative;
+      overflow-x: auto;
+    }
+    .code-block .comment { color: #475569; }
+    .code-block .cmd { color: #38bdf8; }
+    .code-block .out { color: #10b981; }
+    .code-label {
+      font-size: 0.75rem; font-weight: 700; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;
+    }
+    .step-list { display: flex; flex-direction: column; gap: 20px; }
+    .step-item {
+      display: flex; gap: 16px; align-items: flex-start;
+    }
+    .step-num {
+      min-width: 36px; height: 36px;
+      border-radius: 50%; background: linear-gradient(135deg, var(--teal-dark), #0284c7);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 0.9rem; flex-shrink: 0;
+    }
+    .step-content h4 { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+    .step-content p { font-size: 0.88rem; color: var(--text-secondary); }
+
+    /* ─── CTA SECTION ────────────────────────────────────────────── */
+    #cta {
+      padding: 100px 40px;
+      text-align: center;
+      background: linear-gradient(135deg, rgba(14,165,233,0.08), rgba(6,13,27,0.98));
+      border-top: 1px solid var(--border);
+    }
+    #cta h2 { font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 800; margin-bottom: 16px; }
+    #cta p { color: var(--text-secondary); max-width: 600px; margin: 0 auto 40px; font-size: 1.05rem; }
+    .cta-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+    /* ─── FOOTER ─────────────────────────────────────────────────── */
+    footer {
+      padding: 50px 40px 30px;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+    }
+    .footer-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 20px;
+    }
+    .footer-logo { font-weight: 700; font-size: 1rem; }
+    .footer-logo .flag { font-size: 1.4rem; margin-right: 8px; }
+    .footer-links { display: flex; gap: 24px; list-style: none; }
+    .footer-links a { font-size: 0.85rem; color: var(--text-secondary); transition: color 0.2s; }
+    .footer-links a:hover { color: var(--teal); }
+    .footer-copy { font-size: 0.8rem; color: var(--text-muted); }
+    .footer-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+    .footer-badges img { height: 22px; }
+
+    /* ─── ANIMATIONS ─────────────────────────────────────────────── */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .reveal {
+      opacity: 0; transform: translateY(40px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ─── RESPONSIVE ─────────────────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .hero-inner, .showcase-item, .install-grid { grid-template-columns: 1fr; }
+      .showcase-item.reverse .showcase-text { order: 0; }
+      .showcase-item.reverse .showcase-visual { order: 0; }
+      .modules-grid { grid-template-columns: repeat(2, 1fr); }
+      .tech-grid { grid-template-columns: repeat(2, 1fr); }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      nav { padding: 14px 20px; }
+      .nav-links { display: none; }
+      section, #hero { padding: 80px 20px 60px; }
+      .modules-grid { grid-template-columns: 1fr; }
+      .sources-grid { grid-template-columns: 1fr; }
+      .tech-grid { grid-template-columns: repeat(2, 1fr); }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .arch-flow { flex-direction: column; }
+      .arch-arrow { transform: rotate(90deg); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── Ambient Background ─────────────────────────────────── -->
+<div class="bg-grid"></div>
+<div class="bg-blob blob1"></div>
+<div class="bg-blob blob2"></div>
+<div class="bg-blob blob3"></div>
+
+<div class="content">
+
+  <!-- ─── NAVBAR ──────────────────────────────────────────────── -->
+  <nav id="navbar">
+    <div class="nav-logo">
+      <span class="flag">🇩🇴</span>
+      <span>EduFinanciera<span style="color:var(--teal)">RD</span></span>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#modules">Módulos</a></li>
+      <li><a href="#showcase">Funciones</a></li>
+      <li><a href="#tech">Tecnología</a></li>
+      <li><a href="#sources">Fuentes</a></li>
+      <li><a href="#install">Instalación</a></li>
+      <li><a href="#install" class="nav-cta">▶ Ejecutar App</a></li>
+    </ul>
+  </nav>
+
+  <!-- ─── HERO ─────────────────────────────────────────────────── -->
+  <section id="hero">
+    <div class="hero-inner">
+      <div class="hero-text">
+        <div class="hero-badge">✦ UFHEC · Práctica Final Python 2026</div>
+        <h1 class="hero-title">Diagnóstico, IA &amp; Estrategia de Educación Financiera en RD</h1>
+        <p class="hero-sub">
+          Plataforma interactiva con <strong>Inteligencia Artificial (Random Forest &amp; K-Means)</strong>,
+          simulación de costo-efectividad y diagnóstico nacional basada en datos oficiales del
+          <strong>BCRD, MINERD, BID y OCDE</strong>.
+        </p>
+        <div class="hero-btns">
+          <a href="#install" class="btn btn-primary">🚀 Ejecutar Localmente</a>
+          <a href="#modules" class="btn btn-secondary">📊 Ver Módulos</a>
+          <a href="https://github.com" target="_blank" class="btn btn-secondary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.1 3.3 9.4 7.9 10.9.58.1.79-.25.79-.55v-1.9c-3.2.7-3.87-1.54-3.87-1.54-.52-1.33-1.27-1.68-1.27-1.68-1.04-.72.08-.7.08-.7 1.15.08 1.75 1.18 1.75 1.18 1.02 1.75 2.68 1.24 3.33.95.1-.74.4-1.24.72-1.52-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.18-3.09-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.17 1.18a11.05 11.05 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.62 1.58.23 2.75.11 3.04.74.8 1.18 1.83 1.18 3.09 0 4.42-2.7 5.4-5.26 5.68.41.36.78 1.07.78 2.16v3.2c0 .31.21.67.8.55A10.51 10.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
+            Ver en GitHub
+          </a>
+        </div>
+      </div>
+      <div class="hero-img-wrap">
+        <div class="hero-img-glow"></div>
+        <img src="assets/images/hero_banner.jpg" alt="Dashboard de Educación Financiera RD con gráficos interactivos y visualizaciones de datos" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── STATS ─────────────────────────────────────────────────── -->
+  <div id="stats">
+    <div class="stats-grid">
+      <div class="stat-card reveal">
+        <div class="stat-icon">📊</div>
+        <div class="stat-value">55%</div>
+        <div class="stat-label">Inclusión Financiera Adulta (ENIEF 2023)</div>
+      </div>
+      <div class="stat-card reveal">
+        <div class="stat-icon">🎓</div>
+        <div class="stat-value">861K</div>
+        <div class="stat-label">Estudiantes de Secundaria Pública RD</div>
+      </div>
+      <div class="stat-card reveal">
+        <div class="stat-icon">💵</div>
+        <div class="stat-value">US$6.60</div>
+        <div class="stat-label">Costo por Estudiante/Año (Piloto BID)</div>
+      </div>
+      <div class="stat-card reveal">
+        <div class="stat-icon">🤖</div>
+        <div class="stat-value">3,000</div>
+        <div class="stat-label">Registros Sintéticos Calibrados ENIEF</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── MÓDULOS ───────────────────────────────────────────────── -->
+  <section id="modules">
+    <div class="section-inner">
+      <span class="section-tag">· Módulos Interactivos ·</span>
+      <h2 class="section-title">6 Módulos de Análisis y Decisión</h2>
+      <p class="section-desc">
+        La plataforma integra diagnóstico empírico, modelos de Machine Learning,
+        segmentación poblacional y simulación de políticas públicas en una sola interfaz.
+      </p>
+      <div class="modules-grid">
+        <div class="module-card reveal">
+          <span class="module-icon">🏠</span>
+          <h3>Inicio y Diagnóstico Nacional</h3>
+          <p>KPIs clave de inclusión financiera, evolución 2019-2023 (ENIF/ENIEF), matrícula escolar 2024-2025 y brecha de género en el sistema financiero dominicano.</p>
+          <span class="module-pill">Visualización Interactiva</span>
+        </div>
+        <div class="module-card reveal">
+          <span class="module-icon">🤖</span>
+          <h3>Predictor de Riesgo IA (Random Forest)</h3>
+          <p>Formulario en tiempo real para clasificar perfiles ciudadanos en <em>Alto Riesgo</em>, <em>Vulnerable</em> o <em>Sostenible</em> con probabilidades y recomendaciones estratégicas.</p>
+          <span class="module-pill">Machine Learning</span>
+        </div>
+        <div class="module-card reveal">
+          <span class="module-icon">📊</span>
+          <h3>Segmentación Poblacional (K-Means)</h3>
+          <p>Visualización 3D interactiva de clusters sociodemográficos con estadísticas de ingreso, bancarización y nivel educativo por segmento.</p>
+          <span class="module-pill">Clustering No Supervisado</span>
+        </div>
+        <div class="module-card reveal">
+          <span class="module-icon">💰</span>
+          <h3>Calculadora Costo-Efectividad</h3>
+          <p>Simulador de escenarios presupuestarios (Piloto 50K → Nacional 2M+). Ajuste dinámico de costo unitario y tasa de cambio con comparativa vs. gasto educativo.</p>
+          <span class="module-pill">Simulación de Políticas</span>
+        </div>
+        <div class="module-card reveal">
+          <span class="module-icon">🎯</span>
+          <h3>Programas y Hoja de Ruta</h3>
+          <p>Catálogo de 5 programas educativos por nivel (Primaria→Docentes) y cronograma de 4 fases institucionales con barra de progreso cronológico.</p>
+          <span class="module-pill">Estrategia Nacional</span>
+        </div>
+        <div class="module-card reveal">
+          <span class="module-icon">📚</span>
+          <h3>Fuentes y Exportación de Datos</h3>
+          <p>Descarga del dataset sintético calibrado (3,000 registros CSV) y de fuentes oficiales. Vínculos directos a publicaciones del BCRD, SB, MINERD, BID, OCDE y UNESCO.</p>
+          <span class="module-pill">Open Data</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SHOWCASE ──────────────────────────────────────────────── -->
+  <section id="showcase">
+    <div class="section-inner">
+      <span class="section-tag">· Análisis en Profundidad ·</span>
+      <h2 class="section-title">Tecnología al Servicio de la Política Pública</h2>
+
+      <!-- Showcase 1: AI -->
+      <div class="showcase-item reveal">
+        <div class="showcase-text">
+          <h3>🤖 Predictor de Vulnerabilidad Económica con Random Forest</h3>
+          <p>
+            El modelo entrena sobre 3,000 registros calibrados con las tasas empíricas reales de
+            la ENIEF 2023, incluyendo distribuciones lognormales de ingreso y scores logísticos
+            de bancarización.
+          </p>
+          <ul>
+            <li>Clasificación en 3 perfiles: <strong>Alto Riesgo · Vulnerable · Sostenible</strong></li>
+            <li>Distribución de probabilidades en tiempo real por perfil</li>
+            <li>Importancia de características (Feature Importances)</li>
+            <li>Matriz de confusión 3×3 con gradient de color</li>
+            <li>Recomendaciones estratégicas personalizadas por perfil</li>
+          </ul>
+        </div>
+        <div class="showcase-visual">
+          <img src="assets/images/ai_predictor.jpg" alt="Dashboard del predictor Random Forest mostrando distribución de probabilidades y matriz de confusión" />
+        </div>
+      </div>
+
+      <!-- Showcase 2: K-Means -->
+      <div class="showcase-item reverse reveal">
+        <div class="showcase-text">
+          <h3>📊 Segmentación K-Means en Visualización 3D Interactiva</h3>
+          <p>
+            Algoritmo de clustering no supervisado identifica automáticamente 3 segmentos
+            sociodemográficos de la población dominicana basados en ingreso, zona geográfica
+            y nivel educativo.
+          </p>
+          <ul>
+            <li><strong>Segmento Vulnerable Rural</strong> — baja bancarización e ingreso</li>
+            <li><strong>Segmento Urbano Promedio</strong> — ingreso medio, acceso parcial</li>
+            <li><strong>Segmento Consolidado</strong> — bancarizado con educación financiera</li>
+            <li>Scatter 3D en escala logarítmica con 1,000 puntos muestreados</li>
+            <li>Tabla estadística comparativa por cluster</li>
+          </ul>
+        </div>
+        <div class="showcase-visual">
+          <img src="assets/images/kmeans_clustering.jpg" alt="Gráfico 3D de scatter plot con clusters K-Means de la población dominicana" />
+        </div>
+      </div>
+
+      <!-- Showcase 3: Cost -->
+      <div class="showcase-item reveal">
+        <div class="showcase-text">
+          <h3>💰 Simulador de Costo-Efectividad Presupuestaria</h3>
+          <p>
+            Basado en la evaluación experimental del BID (Frisancho, 2017) — Piloto
+            <em>Finanzas en mi Colegio</em> en Perú — el simulador demuestra que la
+            cobertura nacional secundaria requiere <strong>US$5.68M</strong>, menos del 2%
+            del gasto anual en paquetes escolares del MINERD.
+          </p>
+          <ul>
+            <li>US$6.60 por estudiante/año — costo validado por el BID</li>
+            <li>+0.14 DE en conocimiento estudiantil · +0.30 DE en docentes</li>
+            <li>4 escenarios: Piloto → Secundaria → Total Público → Personalizado</li>
+            <li>Ajuste dinámico de tasa de cambio RD$/USD</li>
+          </ul>
+        </div>
+        <div class="showcase-visual">
+          <img src="assets/images/cost_effectiveness.jpg" alt="Infografía comparativa del costo de educación financiera vs gasto en útiles escolares" />
+        </div>
+      </div>
+
+      <!-- Showcase 4: Roadmap -->
+      <div class="showcase-item reverse reveal">
+        <div class="showcase-text">
+          <h3>🎯 Hoja de Ruta Estratégica en 4 Fases</h3>
+          <p>
+            Propuesta concreta para la curricularización obligatoria de la Educación Económica
+            y Financiera en el sistema educativo dominicano, con cronograma institucional
+            de implementación 2024-2027.
+          </p>
+          <ul>
+            <li><strong>Fase 1 · 2024</strong> — Diseño Curricular e Instrumentos</li>
+            <li><strong>Fase 2 · 2025</strong> — Piloto Nacional 50,000 estudiantes</li>
+            <li><strong>Fase 3 · 2026</strong> — Escalamiento Secundaria 861,308</li>
+            <li><strong>Fase 4 · 2027</strong> — Consolidación Nacional 2M+ estudiantes</li>
+            <li>Actores: BCRD · MINERD · SB · INAFOCAM · BID</li>
+          </ul>
+        </div>
+        <div class="showcase-visual">
+          <img src="assets/images/roadmap_phases.jpg" alt="Roadmap estratégico de 4 fases para la implementación de educación financiera en RD" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── TECH STACK ────────────────────────────────────────────── -->
+  <section id="tech">
+    <div class="section-inner">
+      <span class="section-tag">· Stack Tecnológico ·</span>
+      <h2 class="section-title">Construido con Herramientas de Clase Mundial</h2>
+      <p class="section-desc">
+        Ecosistema Python moderno para análisis de datos, machine learning y despliegue de
+        aplicaciones interactivas de ciencia de datos.
+      </p>
+      <div class="tech-grid">
+        <div class="tech-card reveal">
+          <div class="tech-logo">🐍</div>
+          <h4>Python 3.10+</h4>
+          <span>Lenguaje Principal</span>
+        </div>
+        <div class="tech-card reveal">
+          <div class="tech-logo">⚡</div>
+          <h4>Streamlit</h4>
+          <span>v1.30+ · Web Framework</span>
+        </div>
+        <div class="tech-card reveal">
+          <div class="tech-logo">🧠</div>
+          <h4>Scikit-Learn</h4>
+          <span>v1.3+ · Random Forest & K-Means</span>
+        </div>
+        <div class="tech-card reveal">
+          <div class="tech-logo">🐼</div>
+          <h4>Pandas</h4>
+          <span>v2.0+ · DataFrames</span>
+        </div>
+        <div class="tech-card reveal">
+          <div class="tech-logo">🔢</div>
+          <h4>NumPy</h4>
+          <span>v1.24+ · Arrays & Math</span>
+        </div>
+        <div class="tech-card reveal">
+          <div class="tech-logo">📈</div>
+          <h4>Plotly</h4>
+          <span>v5.15+ · Gráficos 3D/Interactivos</span>
+        </div>
+        <div class="tech-card reveal">
+          <div class="tech-logo">🎨</div>
+          <h4>Seaborn + Matplotlib</h4>
+          <span>Visualizaciones Jupyter</span>
+        </div>
+        <div class="tech-card reveal">
+          <div class="tech-logo">📓</div>
+          <h4>Jupyter Notebook</h4>
+          <span>Análisis Reproducible</span>
+        </div>
+      </div>
+
+      <!-- Arch flow -->
+      <h3 style="text-align:center; margin-bottom:32px; font-size:1.2rem; color:var(--text-secondary)">
+        Flujo de Arquitectura del Sistema
+      </h3>
+      <div class="arch-flow reveal">
+        <div class="arch-box">
+          <div class="arch-icon">🗃️</div>
+          <h5>Fuentes de Datos</h5>
+          <span>data.py</span>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box">
+          <div class="arch-icon">🧠</div>
+          <h5>ML Engine</h5>
+          <span>ml_engine.py</span>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box">
+          <div class="arch-icon">⚡</div>
+          <h5>Web App</h5>
+          <span>app.py</span>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box">
+          <div class="arch-icon">🌐</div>
+          <h5>Interfaz Usuario</h5>
+          <span>localhost:8501</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── DATA SOURCES ──────────────────────────────────────────── -->
+  <section id="sources">
+    <div class="section-inner">
+      <span class="section-tag">· Datos Oficiales ·</span>
+      <h2 class="section-title">Basado en Fuentes Institucionales Verificadas</h2>
+      <p class="section-desc">
+        Todos los parámetros del dataset sintético están calibrados con datos empíricos
+        de encuestas nacionales e investigaciones experimentales internacionales.
+      </p>
+      <div class="sources-grid">
+        <div class="source-card reveal">
+          <div class="src-icon">🏛️</div>
+          <h4>Banco Central de la RD (BCRD)</h4>
+          <p>Primera y Segunda Encuesta Nacional de Inclusión Financiera (ENIF 2019 / ENIEF 2023). Tasas de bancarización, productos financieros y alfabetización financiera.</p>
+        </div>
+        <div class="source-card reveal">
+          <div class="src-icon">🏦</div>
+          <h4>Superintendencia de Bancos (SB)</h4>
+          <p>Informe "Hacia un Sistema Financiero Inclusivo y Sostenible 2025". Indicadores de morosidad, crédito de consumo y brecha de género en el sistema financiero formal.</p>
+        </div>
+        <div class="source-card reveal">
+          <div class="src-icon">📚</div>
+          <h4>Ministerio de Educación (MINERD)</h4>
+          <p>Datos de matrícula escolar 2024-2025 por nivel. Acuerdo Marco de Educación Financiera Escolar con Banreservas (2024). Gasto en paquetes escolares.</p>
+        </div>
+        <div class="source-card reveal">
+          <div class="src-icon">🌎</div>
+          <h4>Banco Interamericano de Desarrollo (BID)</h4>
+          <p>Frisancho, V. (2017): Evaluación experimental del piloto "Finanzas en mi Colegio" en Perú. Fuente del costo unitario US$6.60 y efectos +0.14/+0.30 DE.</p>
+        </div>
+        <div class="source-card reveal">
+          <div class="src-icon">🌍</div>
+          <h4>OCDE / INFE</h4>
+          <p>Encuesta Internacional de Alfabetización Financiera de Adultos (2020). Parámetros comparativos de educación financiera y referencia metodológica internacional.</p>
+        </div>
+        <div class="source-card reveal">
+          <div class="src-icon">🎓</div>
+          <h4>UNESCO / Evidencia Experimental</h4>
+          <p>Marco internacional de competencias de educación financiera para jóvenes. Evidencia de impacto de programas de educación financiera escolar en países de ingresos medios.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── INSTALL ───────────────────────────────────────────────── -->
+  <section id="install">
+    <div class="section-inner">
+      <span class="section-tag">· Guía de Inicio ·</span>
+      <h2 class="section-title">Ejecutar el Proyecto Localmente</h2>
+      <p class="section-desc">
+        Requisito: <strong>Python 3.10+</strong> y <strong>pip</strong> instalados.
+        La aplicación corre completamente en local en menos de 2 minutos.
+      </p>
+      <div class="install-grid">
+        <div>
+          <div class="code-label">Terminal / PowerShell</div>
+          <div class="code-block">
+            <span class="comment"># 1. Clonar o ubicarse en el proyecto</span><br/>
+            <span class="cmd">cd "Practica final Python 2026"</span><br/><br/>
+            <span class="comment"># 2. Instalar dependencias</span><br/>
+            <span class="cmd">pip install -r requirements.txt</span><br/><br/>
+            <span class="comment"># 3a. Ejecutar vía script principal</span><br/>
+            <span class="cmd">python main.py</span><br/><br/>
+            <span class="comment"># 3b. O directamente con Streamlit</span><br/>
+            <span class="cmd">streamlit run app.py</span><br/><br/>
+            <span class="out">✓  Local URL: http://localhost:8501</span><br/>
+            <span class="out">✓  Network URL: http://192.168.x.x:8501</span>
+          </div>
+          <div style="margin-top:16px;">
+            <div class="code-label">Cuaderno Jupyter</div>
+            <div class="code-block">
+              <span class="cmd">jupyter notebook Cuaderno_Educacion_Financiera_RD.ipynb</span>
+            </div>
+          </div>
+        </div>
+        <div class="step-list">
+          <div class="step-item reveal">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <h4>Verificar Python</h4>
+              <p>Asegúrese de tener Python 3.10+ instalado. <code style="font-family:monospace;color:var(--teal)">python --version</code></p>
+            </div>
+          </div>
+          <div class="step-item reveal">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <h4>Instalar Dependencias</h4>
+              <p>El archivo <code style="font-family:monospace;color:var(--teal)">requirements.txt</code> incluye Streamlit, Pandas, NumPy, Scikit-Learn, Plotly, Seaborn y Matplotlib.</p>
+            </div>
+          </div>
+          <div class="step-item reveal">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <h4>Lanzar la Aplicación</h4>
+              <p>Ejecute <code style="font-family:monospace;color:var(--teal)">python main.py</code>. El navegador se abrirá automáticamente en <strong>localhost:8501</strong>.</p>
+            </div>
+          </div>
+          <div class="step-item reveal">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <h4>Explorar el Cuaderno</h4>
+              <p>Para el análisis paso a paso y entrenamiento del modelo con <strong>Jupyter Notebook</strong>, abra el archivo <code style="font-family:monospace;color:var(--teal)">.ipynb</code>.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CTA ───────────────────────────────────────────────────── -->
+  <div id="cta">
+    <h2>¿Listo para explorar el análisis?</h2>
+    <p>
+      Esta plataforma es una propuesta de política pública basada en evidencia para
+      la curricularización de la Educación Financiera en República Dominicana.
+    </p>
+    <div class="cta-btns">
+      <a href="#install" class="btn btn-primary">🚀 Comenzar Ahora</a>
+      <a href="README.md" target="_blank" class="btn btn-secondary">📄 Leer Documentación</a>
+      <a href="https://github.com" target="_blank" class="btn btn-secondary">⭐ Ver en GitHub</a>
+    </div>
+  </div>
+
+  <!-- ─── FOOTER ────────────────────────────────────────────────── -->
+  <footer>
+    <div class="footer-inner">
+      <div>
+        <div class="footer-logo">
+          <span class="flag">🇩🇴</span>
+          EduFinancieraRD · UFHEC 2026
+        </div>
+        <div class="footer-copy" style="margin-top:8px;">
+          Desarrollado por <strong>Luis Rene Herrera</strong> · Práctica Final Python 2026
+        </div>
+        <div class="footer-badges" style="margin-top:10px;">
+          <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white" alt="Python 3.10+" />
+          <img src="https://img.shields.io/badge/Streamlit-1.30%2B-FF4B4B?logo=streamlit&logoColor=white" alt="Streamlit" />
+          <img src="https://img.shields.io/badge/Scikit--Learn-1.3%2B-F7931E?logo=scikit-learn&logoColor=white" alt="Scikit-Learn" />
+          <img src="https://img.shields.io/badge/Plotly-5.15%2B-3F4F75?logo=plotly&logoColor=white" alt="Plotly" />
+          <img src="https://img.shields.io/badge/Pandas-2.0%2B-150458?logo=pandas&logoColor=white" alt="Pandas" />
+          <img src="https://img.shields.io/badge/NumPy-1.24%2B-013243?logo=numpy&logoColor=white" alt="NumPy" />
+          <img src="https://img.shields.io/badge/Jupyter-Notebook-F37626?logo=jupyter&logoColor=white" alt="Jupyter" />
+          <img src="https://img.shields.io/badge/UFHEC-2026-006400" alt="UFHEC 2026" />
+        </div>
+      </div>
+      <ul class="footer-links">
+        <li><a href="#modules">Módulos</a></li>
+        <li><a href="#tech">Tecnología</a></li>
+        <li><a href="#sources">Fuentes</a></li>
+        <li><a href="#install">Instalación</a></li>
+        <li><a href="README.md">Documentación</a></li>
+      </ul>
+    </div>
+  </footer>
+
+</div><!-- /content -->
+
+<script>
+  // ─── Intersection Observer for reveal animations ───────────────
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, idx) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), idx * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+  reveals.forEach(el => observer.observe(el));
+
+  // ─── Navbar scroll effect ─────────────────────────────────────
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 60) {
+      navbar.style.padding = '10px 40px';
+      navbar.style.boxShadow = '0 4px 30px rgba(0,0,0,0.4)';
+    } else {
+      navbar.style.padding = '16px 40px';
+      navbar.style.boxShadow = 'none';
+    }
+  });
+
+  // ─── Active nav link highlight ────────────────────────────────
+  const sections = document.querySelectorAll('section[id], div[id]');
+  const navLinks = document.querySelectorAll('.nav-links a');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(sec => {
+      if (window.scrollY >= sec.offsetTop - 120) current = sec.id;
+    });
+    navLinks.forEach(a => {
+      a.style.color = a.getAttribute('href') === '#' + current ? 'var(--teal)' : '';
+    });
+  });
+</script>
+</body>
+</html>
