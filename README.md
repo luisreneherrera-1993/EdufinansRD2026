@@ -28,14 +28,16 @@
 
 ---
 
-## 🌐 Landing Page
+## 🔗 Entregables del Proyecto
 
-Visita la **[Landing Page del Proyecto](index.html)** para una presentación visual completa con imágenes, módulos y guía de inicio.
-
-📚 **[Documentación Técnica Completa](docs/README.md)** — Guías paso a paso de cada módulo.
+| # | Entregable | Descripción | Enlace |
+|---|-----------|-------------|--------|
+| 1 | 📁 **Repositorio GitHub** | Código fuente completo del proyecto | [![GitHub](https://img.shields.io/badge/GitHub-EdufinansRD2026-181717?logo=github&logoColor=white)](https://github.com/luisreneherrera-1993/EdufinansRD2026) |
+| 2 | 🌐 **Landing Page** | Presentación visual del proyecto (GitHub Pages) | [![Landing](https://img.shields.io/badge/🌐%20Ver%20Landing%20Page-38bdf8)](https://luisreneherrera-1993.github.io/EdufinansRD2026/) |
+| 3 | ⚡ **App Streamlit** | Plataforma interactiva con IA desplegada en la nube | [![Streamlit](https://img.shields.io/badge/Streamlit-EdufinansRD2026-FF4B4B?logo=streamlit&logoColor=white)](https://edufinansrd2026.streamlit.app/) |
+| 4 | 📚 **Documentación** | Documentación técnica paso a paso en `/docs/` | [![Docs](https://img.shields.io/badge/Docs-Ver%20en%20GitHub-1ABC9C?logo=github&logoColor=white)](https://github.com/luisreneherrera-1993/EdufinansRD2026/tree/main/docs) |
 
 ---
-
 ## 📋 Table of Contents / Índice
 1. [Descripción](#-descripción)
 2. [Objetivo](#-objetivo)
